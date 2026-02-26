@@ -30,7 +30,6 @@ async function init() {
     textObject: createTaskMenuContainer(null),
     imageObject: [],
   }));
-  console.log("createStartUpPageContainer result:", result);
 
 
 

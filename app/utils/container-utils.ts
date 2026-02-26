@@ -33,8 +33,8 @@ export function createTaskListContainer(
 export function createTaskMenuContainer(selectedItemIndex: number | null): TextContainerProperty[] {
   return [
     new TextContainerProperty({
-      xPosition: 20,
-      yPosition: 216,
+      xPosition: 237,
+      yPosition: 0,
       borderWidth: selectedItemIndex === 0 ? 1 : 0,
       borderColor: 5,
       paddingLength: 10,
@@ -46,8 +46,8 @@ export function createTaskMenuContainer(selectedItemIndex: number | null): TextC
       isEventCapture: selectedItemIndex === 0 ? 1 : 0,
     }),
     new TextContainerProperty({
-      xPosition: 200,
-      yPosition: 216,
+      xPosition: 326,
+      yPosition: 0,
       borderWidth: selectedItemIndex === 1 ? 1 : 0,
       borderColor: 5,
       paddingLength: 10,
