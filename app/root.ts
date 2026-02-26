@@ -21,7 +21,7 @@ enum Page {
 let currentPage: Page = Page.TASKS;
 
 async function init() {
-  const tasks = await getTodaysTasks(3);
+  const tasks = await getTodaysTasks(5);
 
   const bridge = await waitForEvenAppBridge();
   const result = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer({
