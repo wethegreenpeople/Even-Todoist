@@ -26,8 +26,8 @@ async function init() {
   const bridge = await waitForEvenAppBridge();
   const result = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer({
     containerTotalNum: 3,
-    listObject: createTaskListContainer(tasks, true),
-    textObject: createTaskMenuContainer(null),
+    listObject: createTaskListContainer(tasks, false),
+    textObject: createTaskMenuContainer(0),
     imageObject: [],
   }));
 
