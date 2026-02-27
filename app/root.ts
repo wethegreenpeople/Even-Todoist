@@ -10,18 +10,23 @@ import {
   Sys_ItemEvent,
   OsEventTypeList,
 } from "@evenrealities/even_hub_sdk";
-import { getTodaysTasks } from "./utils/todoist-utils";
+import { getTasks } from "./utils/todoist-utils";
 import { createTaskListContainer, createMenuListContainer } from "./utils/container-utils";
 
 enum Page {
   TASKS,
   MENU
 }
+export enum TaskFilter {
+  TODAY,
+  ALL
+}
 
 let currentPage: Page = Page.TASKS;
+let currentFilter: TaskFilter = TaskFilter.TODAY;
 
 async function init() {
-  const tasks = await getTodaysTasks(5);
+  let tasks = await getTasks(5, currentFilter);
 
   const bridge = await waitForEvenAppBridge();
   const result = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer({
@@ -45,7 +50,28 @@ async function init() {
       }
       switch (event.listEvent?.eventType) {
         case OsEventTypeList.CLICK_EVENT:
-          console.log("click")
+        case undefined:
+          console.log(`Click: ${event.listEvent?.currentSelectItemIndex} (${event.listEvent?.currentSelectItemName})`);
+          if (event.listEvent?.currentSelectItemIndex === undefined || event.listEvent?.currentSelectItemIndex === 0) {
+            currentFilter = TaskFilter.ALL;
+            currentPage = Page.TASKS;
+            tasks = await getTasks(10, currentFilter);
+            await bridge.rebuildPageContainer(new RebuildPageContainer({
+              listObject: [...createTaskListContainer(tasks, true)],
+              textObject: [],
+              imageObject: [],
+            }));
+          }
+          else if (event.listEvent?.currentSelectItemIndex === 1) {
+            currentFilter = TaskFilter.TODAY;
+            currentPage = Page.TASKS;
+            tasks = await getTasks(5, currentFilter);
+            await bridge.rebuildPageContainer(new RebuildPageContainer({
+              listObject: [...createTaskListContainer(tasks, true)],
+              textObject: [],
+              imageObject: [],
+            }));
+          }
           break;
         default: break;
       }

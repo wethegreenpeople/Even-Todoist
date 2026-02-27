@@ -14,8 +14,8 @@ export function createTaskListContainer(
     new ListContainerProperty({
       xPosition: focused ? 0 : 100,
       yPosition: 0,
-      width: 560,
-      height: 200,
+      width: 460,
+      height: 268,
       containerID: 1,
       containerName: "tasks-list",
       paddingLength: 5,
@@ -35,17 +35,20 @@ export function createMenuListContainer(
 ): ListContainerProperty[] {
   return [
     new ListContainerProperty({
-      xPosition: 0,
-      yPosition: 0,
-      width: 560,
-      height: 200,
+      xPosition: 10,
+      yPosition: 10,
+      width: 100,
+      height: 268,
       containerID: 2,
       containerName: "menu-list",
       paddingLength: 5,
+      borderRdaius: 5,
+      borderWidth: 1,
+      borderColor: 5,
       itemContainer: new ListItemContainerProperty({
         itemCount: 2,
         itemWidth: 0,
-        isItemSelectBorderEn: focused ? 1 : 0,
+        isItemSelectBorderEn: 1,
         itemName: ["All", "Today"],
       }),
       isEventCapture: focused ? 1 : 0,
