@@ -11,7 +11,7 @@ import {
   OsEventTypeList,
 } from "@evenrealities/even_hub_sdk";
 import { getTodaysTasks } from "./utils/todoist-utils";
-import { createTaskListContainer, createTaskMenuContainer } from "./utils/container-utils";
+import { createTaskListContainer, createMenuListContainer } from "./utils/container-utils";
 
 enum Page {
   TASKS,
@@ -25,9 +25,9 @@ async function init() {
 
   const bridge = await waitForEvenAppBridge();
   const result = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer({
-    containerTotalNum: 3,
-    listObject: createTaskListContainer(tasks, false),
-    textObject: createTaskMenuContainer(0),
+    containerTotalNum: 2,
+    listObject: [...createTaskListContainer(tasks, true)],
+    textObject: [],
     imageObject: [],
   }));
 
@@ -35,27 +35,31 @@ async function init() {
 
   const unsubscribe = bridge.onEvenHubEvent(async (event) => {
     console.log(event);
-    if (event.sysEvent?.eventType === OsEventTypeList.DOUBLE_CLICK_EVENT) {
-      currentPage = currentPage === Page.TASKS ? Page.MENU : Page.TASKS;
-      await bridge.rebuildPageContainer(new RebuildPageContainer({
-        listObject: createTaskListContainer(tasks, currentPage === Page.TASKS),
-        textObject: createTaskMenuContainer(currentPage === Page.MENU ? 0 : null),
-        imageObject: [],
-      }));
+
+    // Handle menu events
+    if (currentPage === Page.MENU) {
+      console.log("menu");
+      switch (event.sysEvent?.eventType) {
+        case OsEventTypeList.DOUBLE_CLICK_EVENT: await bridge.shutDownPageContainer(0);
+        default: break;
+      }
+      switch (event.listEvent?.eventType) {
+        case OsEventTypeList.CLICK_EVENT:
+          console.log("click")
+          break;
+        default: break;
+      }
     }
-    else if (event.textEvent?.eventType === OsEventTypeList.SCROLL_BOTTOM_EVENT) {
-      await bridge.rebuildPageContainer(new RebuildPageContainer({
-        listObject: createTaskListContainer(tasks, false),
-        textObject: createTaskMenuContainer(1),
-        imageObject: [],
-      }));
-    }
-    else if (event.textEvent?.eventType === OsEventTypeList.SCROLL_TOP_EVENT) {
-      await bridge.rebuildPageContainer(new RebuildPageContainer({
-        listObject: createTaskListContainer(tasks, false),
-        textObject: createTaskMenuContainer(0),
-        imageObject: [],
-      }));
+    else if (currentPage === Page.TASKS) {
+      switch (event.sysEvent?.eventType) {
+        case OsEventTypeList.DOUBLE_CLICK_EVENT:
+          currentPage = Page.MENU;
+          await bridge.rebuildPageContainer(new RebuildPageContainer({
+            listObject: [...createMenuListContainer(true), ...createTaskListContainer(tasks, false)],
+            textObject: [],
+            imageObject: [],
+          }));
+      }
     }
   });
 }

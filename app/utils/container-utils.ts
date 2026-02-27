@@ -7,12 +7,12 @@ import {
 
 export function createTaskListContainer(
   tasks: GetTasksResponse,
-  onTaskList: boolean
+  focused: boolean
 ): ListContainerProperty[] {
   const taskList = tasks.results.map((result) => result.content);
   return [
     new ListContainerProperty({
-      xPosition: 0,
+      xPosition: focused ? 0 : 100,
       yPosition: 0,
       width: 560,
       height: 200,
@@ -22,41 +22,33 @@ export function createTaskListContainer(
       itemContainer: new ListItemContainerProperty({
         itemCount: taskList.length,
         itemWidth: 0,
-        isItemSelectBorderEn: 1,
+        isItemSelectBorderEn: focused ? 1 : 0,
         itemName: tasks.results.map((result, index) => result.content),
       }),
-      isEventCapture: onTaskList ? 1 : 0,
+      isEventCapture: focused ? 1 : 0,
     }),
   ];
 }
 
-export function createTaskMenuContainer(selectedItemIndex: number | null): TextContainerProperty[] {
+export function createMenuListContainer(
+  focused: boolean
+): ListContainerProperty[] {
   return [
-    new TextContainerProperty({
-      xPosition: 237,
+    new ListContainerProperty({
+      xPosition: 0,
       yPosition: 0,
-      borderWidth: selectedItemIndex === 0 ? 1 : 0,
-      borderColor: 5,
-      paddingLength: 10,
-      width: 75,
-      height: 50,
+      width: 560,
+      height: 200,
       containerID: 2,
-      containerName: "today-label",
-      content: "Today",
-      isEventCapture: selectedItemIndex === 0 ? 1 : 0,
-    }),
-    new TextContainerProperty({
-      xPosition: 326,
-      yPosition: 0,
-      borderWidth: selectedItemIndex === 1 ? 1 : 0,
-      borderColor: 5,
-      paddingLength: 10,
-      width: 75,
-      height: 50,
-      containerID: 3,
-      containerName: "all-label",
-      content: "All",
-      isEventCapture: selectedItemIndex === 1 ? 1 : 0,
+      containerName: "menu-list",
+      paddingLength: 5,
+      itemContainer: new ListItemContainerProperty({
+        itemCount: 2,
+        itemWidth: 0,
+        isItemSelectBorderEn: focused ? 1 : 0,
+        itemName: ["All", "Today"],
+      }),
+      isEventCapture: focused ? 1 : 0,
     }),
   ];
 }
