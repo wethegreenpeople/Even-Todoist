@@ -95,25 +95,24 @@ async function init() {
         default: break;
       }
       if (currentPage === Page.TASKS) {
-        switch (event.listEvent?.eventType) {
-          case OsEventTypeList.CLICK_EVENT:
-          // Sometimes, at least in the simulator, the event type comes through as undefined
-          // So we have to handle it
-          case undefined:
+        // Real device (ring) fires listEvent on click.
+        // Simulator fires sysEvent with CLICK_EVENT (0), which the SDK normalises to undefined.
+        // We must NOT use `case undefined` in a listEvent switch here because that catches
+        // any event that lacks a listEvent (FOREGROUND_ENTER, etc.), causing false navigation.
+        const isDeviceClick = event.listEvent != null;
+        const isSimulatorClick = event.sysEvent != null && event.sysEvent.eventType == null;
+        if (isDeviceClick || isSimulatorClick) {
+          const index = event.listEvent?.currentSelectItemIndex ?? 0;
+          if (tasks.results[index]) {
+            selectedTask = tasks.results[index];
             currentPage = Page.TASK_DETAILS;
-            // Sometimes (again at least in the sim, the index comes as undefined, we'll always assume it's the first item)
-            const index = event.listEvent?.currentSelectItemIndex ?? 0;
-            if (tasks.results[index]) {
-              selectedTask = tasks.results[index];
-              const { listObject, textObject } = createTaskDetailsContainer(selectedTask);
-              await bridge.rebuildPageContainer(new RebuildPageContainer({
-                listObject,
-                textObject,
-                imageObject: [],
-              }));
-            }
-            break;
-          default: break;
+            const { listObject, textObject } = createTaskDetailsContainer(selectedTask);
+            await bridge.rebuildPageContainer(new RebuildPageContainer({
+              listObject,
+              textObject,
+              imageObject: [],
+            }));
+          }
         }
       }
     }
@@ -131,40 +130,36 @@ async function init() {
           break;
         default: break;
       }
-      switch (event.listEvent?.eventType) {
-        case OsEventTypeList.CLICK_EVENT:
-        case undefined:
-          const menuSelection = event.listEvent?.currentSelectItemIndex ?? 0
-          if (selectedTask && menuSelection === 0) {
-            await completeTask(selectedTask.id);
-            currentPage = Page.TASKS;
-            tasks = await getTasks(5, currentFilter);
-            await bridge.rebuildPageContainer(new RebuildPageContainer({
-              listObject: [...createTaskListContainer(tasks, true)],
-              textObject: [],
-              imageObject: [],
-            }));
-          } else if (selectedTask && menuSelection === 1) {
-            await rescheduleTask(selectedTask.id);
-            currentPage = Page.TASKS;
-            tasks = await getTasks(5, currentFilter);
-            await bridge.rebuildPageContainer(new RebuildPageContainer({
-              listObject: [...createTaskListContainer(tasks, true)],
-              textObject: [],
-              imageObject: [],
-            }));
-          } else if (selectedTask && menuSelection === 2) {
-            await moveToInbox(selectedTask.id);
-            currentPage = Page.TASKS;
-            tasks = await getTasks(5, currentFilter);
-            await bridge.rebuildPageContainer(new RebuildPageContainer({
-              listObject: [...createTaskListContainer(tasks, true)],
-              textObject: [],
-              imageObject: [],
-            }));
-          }
-          break;
-        default: break;
+      if (currentPage === Page.TASK_DETAILS && (event.listEvent != null || (event.sysEvent != null && event.sysEvent.eventType == null))) {
+        const menuSelection = event.listEvent?.currentSelectItemIndex ?? 0;
+        if (selectedTask && menuSelection === 0) {
+          await completeTask(selectedTask.id);
+          currentPage = Page.TASKS;
+          tasks = await getTasks(5, currentFilter);
+          await bridge.rebuildPageContainer(new RebuildPageContainer({
+            listObject: [...createTaskListContainer(tasks, true)],
+            textObject: [],
+            imageObject: [],
+          }));
+        } else if (selectedTask && menuSelection === 1) {
+          await rescheduleTask(selectedTask.id);
+          currentPage = Page.TASKS;
+          tasks = await getTasks(5, currentFilter);
+          await bridge.rebuildPageContainer(new RebuildPageContainer({
+            listObject: [...createTaskListContainer(tasks, true)],
+            textObject: [],
+            imageObject: [],
+          }));
+        } else if (selectedTask && menuSelection === 2) {
+          await moveToInbox(selectedTask.id);
+          currentPage = Page.TASKS;
+          tasks = await getTasks(5, currentFilter);
+          await bridge.rebuildPageContainer(new RebuildPageContainer({
+            listObject: [...createTaskListContainer(tasks, true)],
+            textObject: [],
+            imageObject: [],
+          }));
+        }
       }
     }
   });
